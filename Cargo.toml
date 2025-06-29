@@ -5,4 +5,3 @@ edition = "2024"
 
 [dependencies]
 arrow = "55.2.0"
-parquet = { version = "55.2.0" , features = ["arrow"]}
