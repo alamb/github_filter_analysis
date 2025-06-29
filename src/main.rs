@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 use arrow::array::BooleanArray;
 use std::path::PathBuf;
+use parquet::arrow::arrow_reader::RowSelection;
 
 fn main() {
     analyze_query("q30")
@@ -33,7 +34,6 @@ fn analyze_query(query_name: &str ) {
     println!("Overall selectivity: {:.2}%", selectivity);
 
     for filter in filters {
-     
         println!("{}", filter);
     }
 }
@@ -67,12 +67,42 @@ struct QueryFilters {
 impl Display for QueryFilters {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 
-        write!(f, "{}: {} filters ({}/{}, selectivity {}) from file",
-            self.file_name(),
+        writeln!(f, "{}", self.file_name())?;
+
+        writeln!(f, "  {} filters ({}/{}, selectivity {})",
                self.len(),
                 self.total_true(),
                 self.total_rows(),
-            self.selectivity())?;
+            self.selectivity(),
+        )?;
+
+        // compute how many selections there are with the row selection representation
+        let selections = self.row_selection();
+        let mut total_taken_rows = 0;
+        let mut total_skipped_rows = 0;
+        for s in selections.iter() {
+            if s.skip {
+                total_skipped_rows += s.row_count;
+            } else {
+                total_taken_rows += s.row_count;
+            }
+        };
+        let avg_taken_rows = if total_taken_rows + total_skipped_rows > 0 {
+            total_taken_rows as f64 / (total_taken_rows + total_skipped_rows) as f64
+        } else {
+            0.0
+        };
+        let avg_skipped_rows = if total_taken_rows + total_skipped_rows > 0 {
+            total_skipped_rows as f64 / (total_taken_rows + total_skipped_rows) as f64
+        } else {
+            0.0
+        };
+
+
+        write!(f, "  RowSelection: {} selections, avg taken row count: {:.2}, avg skipped rows: {:.2}",
+            selections.iter().count(),
+            avg_taken_rows,
+            avg_skipped_rows)?;
 
         Ok(())
     }
@@ -109,6 +139,12 @@ impl QueryFilters {
         let total_true = self.total_true() as f64;
         (total_true / total_rows) * 100.0
     }
+
+    /// returns the filters as a Vec of RowSelection
+    pub fn row_selection(&self) -> RowSelection {
+        RowSelection::from_filters(&self.filters)
+    }
+
 }
 
 
