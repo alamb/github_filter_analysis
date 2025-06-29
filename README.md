@@ -28,3 +28,6 @@ to help visualize and design heuristics for the best filter representation.
 `BooleanArray` 
 
 
+TODO:
+1. writeup how the data was gathered
+1. Visualize the layout of filters from the clickbench dataset with an impage
