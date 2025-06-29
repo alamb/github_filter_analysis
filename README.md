@@ -14,7 +14,9 @@ which are then converted to `RowSelection` for evaluation during evaluation (TOD
 The `RowSelection` is then used to skip/scan ranges of the rows during decoding
 
 It turns out that for certain patterns of filters, it is faster to decode all rows and then apply the `filter` kernel
-rather than apply the skip/scan logic from `RowSelection`. See the ticket 9TODO find arrow-rs ticket) for more details.
+rather than apply the skip/scan logic from `RowSelection`. See the ticket
+https://github.com/apache/arrow-rs/issues/7456
+ for more details.
 
 
 
