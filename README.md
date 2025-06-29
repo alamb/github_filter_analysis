@@ -1,6 +1,7 @@
 Analysis the layout of filters from the clickbench
 
-Related ticket:
+Related ticket: https://github.com/apache/datafusion/pull/16562
+
 
 Background:
 
